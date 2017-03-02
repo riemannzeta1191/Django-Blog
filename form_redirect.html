@@ -1,0 +1,14 @@
+{% extends 'blog/base.html' %}
+{% block body %}
+
+<h1>Yay!It's Posted</h1>
+
+</form>
+            <ul class="nav navbar-nav navbar-left">
+                <li>
+                    <a href="{% url 'blog:index' %}" class="btn btn-info btn-lg">
+                        <span class="glyphicon glyphicon" aria-hidden="true"></span>&nbsp;Home
+                    </a>
+                </li>
+            </ul>
+{% endblock %}
