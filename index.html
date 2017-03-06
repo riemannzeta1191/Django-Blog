@@ -1,0 +1,13 @@
+{% extends 'blog/base.html' %}
+{% block body %}
+
+<h2>Categories</h2>
+<ul>
+
+    {% for elem in object_list %}
+    <li><a href="{{ elem.get_absolute_url }}">{{ elem.category }}</a></li>
+    {% endfor %}
+
+</ul>
+
+{% endblock %}

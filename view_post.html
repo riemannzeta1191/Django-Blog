@@ -1,0 +1,26 @@
+{% extends 'blog/base.html' %}
+{% block body %}
+
+
+<h4>{{ title }}</h4>
+    {{ instance.title }}<br/>
+    {{ instance.content }}<br/>
+    {{ instance.timestamp }}<br/>
+    {{ instance.updated }}<br/>
+    {{ instance.id }}<br/>
+
+<!--<ul class="nav navbar-nav navbar">-->
+    <!--{% for elem in object_list %}-->
+    <!--<div class="post">-->
+                <!--<li>-->
+                    <!--<a href="{{ elem.get_absolute_url }}" class="btn btn-primary btn-xlarge">-->
+                        <!--<span class="glyphicon glyphicon" aria-hidden="true"></span>Edit-->
+                    <!--</a>-->
+                <!--</li>-->
+    <!--</div>-->
+
+            <!--</ul>-->
+
+    <!--{% endfor %}-->
+
+{% endblock %}
