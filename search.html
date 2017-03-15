@@ -1,0 +1,33 @@
+{% extends 'blog/base.html' %}
+{% block body %}
+<!--{% if query  %}-->
+            <!--<h3>Results</h3>-->    """ Template for Whoosh """
+
+            <!--{% for post in posts %}-->
+               <!--<p>-->
+                    <!--<li><a href="{{ post.object.slug }}">{{ post.object.title }}</a></li>-->
+
+               <!--</p>-->
+                <!--<p>No results found.</p>-->
+            <!--{% endfor %}-->
+<!--{% endif %}-->
+
+
+
+{% if object_list %}
+            <h3>Results</h3><br/>
+     {% for post in object_list  %}
+
+              <h2>{{post.title}}</h2><br/>
+              <p>{{post.content}}</p>
+{% endfor %}
+{% else %}
+           <h3>Alas!!Nothing to show!:)</h3>
+
+{% endif %}
+
+
+
+
+
+{% endblock %}
