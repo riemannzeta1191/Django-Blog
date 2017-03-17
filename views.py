@@ -1,1 +1,41 @@
-from django.shortcuts import render, get_object_or_404, render_to_response,redirectfrom django.http import HttpResponse, HttpResponseRedirect,Http404from .models import Post, PostDetailfrom django.views.generic import ListView,CreateViewfrom forms import PostFormfrom haystack.query import SearchQuerySetfrom django.db.models import  Qfrom django.core.exceptions import ObjectDoesNotExist# Create your views here.def post_list(request):    queryset = PostDetail.objects.all()    context = {        'object_list': queryset,    }    return render(request, "blog/index.html", context)class post_detail(ListView):    template_name = 'blog/view_posts.html'    def get_queryset(self):        self.postdetail = get_object_or_404(PostDetail,  slug=self.kwargs['slug'])        return Post.objects.filter(postDetail=self.postdetail)def post_create(request,):    form = PostForm(request.POST)    if form.is_valid():        instance = form.save(commit=False)        instance.save()        print instance        return redirect('blog:form_redirect')    else:        form = PostForm()        return render(request, "blog/post_form.html", {'form':form})def form_redirect(request):    return render(request,"blog/form_redirect.html",)def post_update(request, id=None):    instance = get_object_or_404(Post, id =id)    form = PostForm(request.POST or None, instance=instance)    if  form.is_valid():        instance = form.save(commit=False)        instance.save()        print instance    context = {        "title":instance.title,        "instance":instance,        "form":form,    }    return render(request, "blog/edit_post_form.html", context)def view_post(request, id=None):    instance = get_object_or_404(Post, id=id)    queryset = Post.objects.all()    context ={        'object_list':queryset,        'instance': instance,    }    return render(request, 'blog/view_post.html', context)def redirect_update(request):    return render(request,"blog/view_posts.html")def searchResults(request):    if request.method == 'GET':        title_name = request.GET.get('query')        if title_name:            try:                query_list = Post.objects.filter(Q(title__icontains = title_name)|                                             Q(content__icontains = title_name)                )                context = {                'object_list':query_list,            }            except ObjectDoesNotExist:                raise Http404            return render(request, 'search/search.html', context)        return HttpResponse('<h3>Enter something pussilaminous skunk!! OR go and read The Das Capital<h3>')    else:        return render(request, 'search/search.html', {})
+from django.shortcuts import render,redirect
+from django.contrib.auth import (
+  authenticate,
+  get_user_model,
+  login,
+  logout,
+)
+from django.views import generic
+from django.views.generic import View
+from .forms import UserForm
+
+
+# Create your views here.
+
+class UserFormView(View):
+    form_class = UserForm
+    template_name = 'users/registration.html'
+
+    def get(self, request):
+        form = self.form_class(None)
+        return render(request, self.template_name, {'form':form})
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+
+            username = form.cleaned_data['username']
+            password =  form.cleaned_data['password']
+            user.set_password(password)
+            user.save()
+
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('blog:index')
+
+        return render(request, self.template_name, {'form':form})
