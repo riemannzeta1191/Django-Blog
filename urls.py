@@ -1,22 +1,39 @@
+"""Erudite URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/1.9/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
+Including another URLconf
+    1. Add an import:  from blog import urls as blog_urls
+    2. Import the include() function: from django.conf.urls import url, include
+    3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
+"""
+
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from .import views
-app_name = 'blog'
+from blog import views
+from rest_framework.urlpatterns import format_suffix_patterns
+#from users import views
+
+
+
 
 urlpatterns = [
-    url(r'^$',"blog.views.post_list",name='index'),
-    url(r'^(?P<id>\d+)/update/$', 'blog.views.post_update', name='update'),
-    url(r'^create/$', 'blog.views.post_create', name='post_create'),
-    url(r'^create/blog/posted/$', 'blog.views.form_redirect', name='form_redirect'),
-    url(r'^post/(?P<id>\d+)/$', 'blog.views.view_post', name='content'),
-    url(r'^search/', 'blog.views.searchResults', name='search'),
-    url(r'^(?P<slug>[^\.]+)/$', views.post_detail.as_view(), name='detail'),
+    url(r'^admin/', admin.site.urls),
+    url(r'^categories/', include("blog.urls", namespace='blog')),
+    url(r'^posts/$', views.PostListView.as_view(),name='API_ViewPosts'),
+    url(r'^posts/(?P<pk>\d+)/$', views.PostDetailView.as_view(),name='API_PostOperations'),
+
+    #url(r'^register/', views.UserFormView.as_view(),name='register'),
 
 
-     # url(r'^search/', include('haystack.urls',)),
-    # url(r'^create/$', "posts.views.post_create"),
-    # url(r'^(?P<id>\d+)/$', "posts.views.post_detail", name='detail'),
-    # url(r'^(?P<id>\d+)/edit/$', "posts.views.post_update", name='update'),
-    # url(r'^delete/$', "posts.views.post_delete"),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
