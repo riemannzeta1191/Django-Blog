@@ -3,11 +3,11 @@
 
 
 <h4>{{ title }}</h4>
-    {{ instance.title }}<br/>
-    {{ instance.content }}<br/>
-    {{ instance.timestamp }}<br/>
-    {{ instance.updated }}<br/>
-    {{ instance.id }}<br/>
+    <h2>{{ instance.title }}</h2><br/>
+    <h4>{{ instance.content }}</h4><br/>
+    <h4>{{ instance.timestamp }}</h4><br/>
+    <h4>{{ instance.updated }}</h4><br/>
+    <h4>{{ instance.id }}</h4><br/>
 
 <!--<ul class="nav navbar-nav navbar">-->
     <!--{% for elem in object_list %}-->
@@ -23,4 +23,29 @@
 
     <!--{% endfor %}-->
 
+{% if post.comment_set.all %}
+<h2>Comments</h2>
+<div class="comments">
+    {% for comment in post.comment_set.all %}
+        <span>
+            <a href="{{ comment.website }}">{{ comment.name }}</a> said on {{ comment.created_date }}
+        </span>
+        <p>
+            {{ comment.text }}
+        </p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<br />
+
+<h2>Add Comment</h2>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" name="submit" value="Submit" />
+</form>
 {% endblock %}

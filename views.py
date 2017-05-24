@@ -1,1 +1,73 @@
-from django.shortcuts import render, get_object_or_404, render_to_response,redirectfrom django.http import HttpResponse, HttpResponseRedirect,Http404from .models import Post, PostDetailfrom django.views.generic import ListView,CreateViewfrom django.contrib.auth.decorators import user_passes_testfrom forms import PostForm,CommentFormfrom django.db.models import  Qfrom django.core.exceptions import ObjectDoesNotExistfrom django.contrib.auth.decorators import login_requiredfrom rest_framework.views import APIViewfrom rest_framework.response import Responsefrom rest_framework import statusfrom .serializers import PostSerializerfrom users import views as usrfrom django.views.decorators.cache import cache_pageimport  requests# Create your views here.@login_requireddef post_list(request):    queryset = PostDetail.objects.all()    context = {        'object_list': queryset,    }    return render(request, "blog/index.html", context)class post_detail(ListView):    template_name = 'blog/view_posts.html'    def get_queryset(self):        self.postdetail = get_object_or_404(PostDetail,  slug=self.kwargs['slug'])        return Post.objects.filter(postDetail=self.postdetail)@login_required(login_url="users:login")@user_passes_test(lambda u: u.is_superuser)def post_create(request):    if request.user.is_authenticated:        form = PostForm(request.POST)        if form.is_valid():            instance = form.save(commit=False)            instance.save()            print instance            return redirect('blog:form_redirect')        else:            form = PostForm()            return render(request, "blog/post_form.html", {'form':form})    return render(request, "users/registration.html", {})def form_redirect(request):    return render(request,"blog/form_redirect.html",)@login_required@user_passes_test(lambda u: u.is_superuser)def post_update(request, id=None):    instance = get_object_or_404(Post, id =id)    form = PostForm(request.POST or None, instance=instance)    if  form.is_valid():        instance = form.save(commit=False)        instance.save()        print instance    context = {        "title":instance.title,        "instance":instance,        "form":form,    }    return render(request, "blog/edit_post_form.html", context)def view_post(request, id=None):    try:        instance = get_object_or_404(Post, id=id)    except ObjectDoesNotExist:        return HttpResponse(status=404)    queryset = Post.objects.all()    context ={        'object_list':queryset,        'instance': instance,    }    return render(request, 'blog/view_post.html', context)def redirect_update(request):    return render(request,"blog/view_posts.html")@cache_page(60 * 15)def searchResults(request):    if request.method == 'GET':        title_name = request.GET.get('query')        if title_name:            try:                query_list = Post.objects.filter(Q(title__icontains = title_name)|                                             Q(content__icontains = title_name)                )                context = {                'object_list':query_list,            }            except ObjectDoesNotExist:                raise Http404            return render(request, 'search/search.html', context)        return HttpResponse('<h3>Enter something pusillaminous skunk!! OR go and read The Das Capital<h3>')    else:        return render(request, 'search/search.html', {})def shop(request):    render(request, 'blog/shop.html',)class PostListView(APIView):    """ List all Post details or create a new one    """    def get(self, request):        posts = Post.objects.all()        serialized = PostSerializer(posts, many=True)        return Response(serialized.data)    def post(self, request):        serializer = PostSerializer(data=request.data)        if serializer.is_valid():            serializer.save()            return Response(serializer.data, status=status.HTTP_201_CREATED)        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)class PostDetailView(APIView):    """    Get, Update or Retrieve data    """    def get_instance(self, pk):        try:            return  Post.objects.get(pk=pk)        except ObjectDoesNotExist:            raise Http404    def get(self, request, pk, format=None):        if request.method == 'GET':            post = self.get_instance(pk)            serializer = PostSerializer(post)            return Response(serializer.data)    def put(self, request, pk, format=None):        if request.method == "PUT":            post =  self.get_instance(pk)            serializer = PostSerializer(post, data=request.data)            if serializer.is_valid():                serializer.save()                return Response(serializer.data)            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    def delete(self,request, pk, format=None):        if request.method == 'DELETE':            post = self.get_instance(pk)            post.delete()            return Response(status=status.HTTP_204_NO_CONTENT)
+from django.shortcuts import render,redirect,HttpResponseRedirect
+from django.contrib.auth import (
+  authenticate,
+  get_user_model,
+  login,
+  logout,
+)
+from django.views import generic
+from django.views.generic import View
+from .forms import UserForm
+from blog.models import Post,PostDetail
+from Erudite import settings as sett
+
+
+# Create your views here.
+
+class UserFormView(View):
+    form_class = UserForm
+    template_name = 'users/registration.html'
+
+    def get(self, request):
+        form = self.form_class(None)
+        return render(request, self.template_name, {'form':form})
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+
+            username = form.cleaned_data['username']
+            password =  form.cleaned_data['password']
+            user.set_password(password)
+            user.save()
+
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('blog:index')
+
+        return render(request, self.template_name, {'form':form})
+
+
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                queryset = PostDetail.objects.all()
+                context = {
+                    'object_list':queryset
+                }
+                return render(request, 'blog/index.html', context)
+            else:
+                return render(request, 'users/login.html', {'error_message': 'Your account has been disabled'})
+        else:
+            return render(request, 'users/login.html', {'error_message': 'Invalid login'})
+
+    return render(request, 'users/login.html', {'error_message': ''})
+
+
+def logout_user(request):
+    logout(request)
+    form = UserForm(request.POST or None)
+    context = {
+        "form": form,
+    }
+    return render(request, 'users/login.html', context)
