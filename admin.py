@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Post, PostDetail
+from .models import Post, PostDetail,Comment
 
 
 class PostModelAdmin(admin.ModelAdmin):
@@ -25,3 +25,4 @@ class PostDetailAdmin(admin.ModelAdmin):
         model = PostDetail
 
 admin.site.register(PostDetail, PostDetailAdmin)
+admin.site.register(Comment)

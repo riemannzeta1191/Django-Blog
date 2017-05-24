@@ -1,24 +1,25 @@
-from django import  forms
-from django.contrib.auth.models import User
+from django import forms
+
+from .models import Post,PostDetail,Comment
 
 
-class UserForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
+class PostForm(forms.ModelForm):
+
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+        model = Post
+        fields = [
+            "title",
+            "content"
+ ]
+
+class CommentForm(forms.ModelForm):
+    text = forms.CharField(widget=forms.Textarea, label='Entry')
+    class Meta:
+        model = Comment
+        fields = [
+            "text",
+            "author"
+
+ ]
 
 
-
-
-
-# class UserRegisterForm(forms.Form):
-#     usrname = forms.CharField()
-#     password = forms.CharField(widget=forms.PasswordInput)
-
-
-
-# class UserLogoutForm(forms.Form):
-#     usrname = forms.CharField()
-#     password = forms.CharField(widget=forms.PasswordInput)
-#
